@@ -4,14 +4,16 @@ const mineflayer = require('mineflayer');
 const app = express();
 const PORT = 5000;
 
-// ----- UPDATED BOT CONFIG -----
+// ----- FIXED BOT CONFIG -----
 const BOT_CONFIG = {
-  host: 'Nainiwalranvir.aternos.me',
-  port: 45216,
+  host: 'Nainiwalranvir.exaroton.me',
+  port: 45542,
   username: process.env.MC_USERNAME || 'RandomBot_' + Math.floor(Math.random() * 10000),
-  version: 1.21.10,           // Let Mineflayer auto-detect
-  protocolVersion: 763,     // Protocol for Minecraft 1.21.10
+  version: '1.21.10',  // ✅ Must be a string
   auth: 'offline'
+  // Optional safer version:
+  // version: false,
+  // protocolVersion: 763
 };
 
 let bot = null;
@@ -38,10 +40,8 @@ function addLog(message) {
 }
 
 function cleanupBot() {
-  if (movementTimer) {
-    clearTimeout(movementTimer);
-    movementTimer = null;
-  }
+  if (movementTimer) clearTimeout(movementTimer);
+  movementTimer = null;
   if (bot) {
     bot.removeAllListeners();
     bot = null;
@@ -53,9 +53,9 @@ function createBot() {
   isReconnecting = false;
   botStatus.connected = false;
   botStatus.lastAction = 'Connecting...';
-  
+
   addLog(`Connecting to ${BOT_CONFIG.host}:${BOT_CONFIG.port}...`);
-  
+
   try {
     bot = mineflayer.createBot(BOT_CONFIG);
   } catch (err) {
@@ -73,18 +73,18 @@ function createBot() {
     botStatus.lastAction = 'Connected and moving';
     startRandomMovement();
   });
-  
+
   bot.on('chat', (username, message) => {
     if (bot && username !== bot.username) addLog(`Chat: <${username}> ${message}`);
   });
-  
+
   bot.on('kicked', (reason) => {
     addLog(`Bot was kicked: ${typeof reason === 'object' ? JSON.stringify(reason) : reason}`);
     botStatus.connected = false;
     botStatus.lastAction = 'Kicked from server';
     scheduleReconnect();
   });
-  
+
   bot.on('error', (err) => {
     addLog(`Error: ${err.message}`);
     botStatus.connected = false;
@@ -92,7 +92,7 @@ function createBot() {
     botStatus.lastAction = 'Connection error';
     scheduleReconnect();
   });
-  
+
   bot.on('end', (reason) => {
     addLog(`Disconnected: ${reason}`);
     botStatus.connected = false;
@@ -104,9 +104,9 @@ function createBot() {
 function scheduleReconnect() {
   if (isReconnecting) return;
   isReconnecting = true;
-  
+
   cleanupBot();
-  
+
   if (botStatus.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
     addLog('Max reconnect attempts reached. Waiting 2 minutes...');
     botStatus.lastAction = 'Waiting to retry (2 min)';
@@ -117,11 +117,11 @@ function scheduleReconnect() {
     }, 120000);
     return;
   }
-  
+
   botStatus.reconnectAttempts++;
   addLog(`Reconnecting (${botStatus.reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}) in 30 seconds...`);
   botStatus.lastAction = `Reconnecting in 30s (${botStatus.reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`;
-  
+
   setTimeout(() => {
     isReconnecting = false;
     createBot();
@@ -130,16 +130,16 @@ function scheduleReconnect() {
 
 function startRandomMovement() {
   const actions = ['forward', 'back', 'left', 'right', 'jump', 'look', 'sneak', 'idle'];
-  
+
   function performRandomAction() {
     if (!bot || !bot.entity) return;
-    
+
     const action = actions[Math.floor(Math.random() * actions.length)];
     const duration = Math.floor(Math.random() * 2000) + 500;
-    
+
     try {
       bot.clearControlStates();
-      
+
       switch (action) {
         case 'forward': botStatus.lastAction = 'Walking forward'; bot.setControlState('forward', true); setTimeout(() => bot.setControlState('forward', false), duration); break;
         case 'back': botStatus.lastAction = 'Walking backward'; bot.setControlState('back', true); setTimeout(() => bot.setControlState('back', false), duration); break;
@@ -153,10 +153,10 @@ function startRandomMovement() {
     } catch (err) {
       addLog(`Movement error: ${err.message}`);
     }
-    
+
     movementTimer = setTimeout(performRandomAction, Math.floor(Math.random() * 5000) + 3000);
   }
-  
+
   addLog('Starting random movement pattern...');
   performRandomAction();
 }
