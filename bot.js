@@ -1,21 +1,15 @@
-const mineflayer = require('mineflayer')
+const mineflayer = require("mineflayer");
 
-const bot = mineflayer.createBot({
-  host: "nainiwalranvir.aternos.me",
+let bot = mineflayer.createBot({
+  host: "Nainiwalranvir.aternos.me",
   port: 17633,
-  username: "ServerScoutBot",
-  version: "1.21.1"    // VERY IMPORTANT
-})
+  username: "ScoutBot",
+  version: "1.21.1"
+});
 
-bot.on('login', () => {
-  console.log("Bot joined the server successfully!")
-})
+bot.on("login", () => {
+  console.log("Bot joined the server!");
+});
 
-bot.on('error', err => {
-  console.log("Bot error:", err)
-})
-
-bot.on('end', () => {
-  console.log("Bot disconnected, retrying in 10 seconds...")
-  setTimeout(() => bot(), 10000)
-})
+bot.on("error", err => console.log(err));
+bot.on("end", () => console.log("Bot disconnected"));
