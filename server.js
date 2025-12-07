@@ -5,11 +5,12 @@ const mineflayer = require('mineflayer');
 const app = express();
 const PORT = 5000;
 
+// ----- UPDATED BOT CONFIG -----
 const BOT_CONFIG = {
   host: 'Nainiwalranvir.aternos.me',
   port: 45216,
   username: process.env.MC_USERNAME || 'RandomBot_' + Math.floor(Math.random() * 10000),
-  version: false,
+  version: '1.21.10', // <-- Updated from false
   auth: 'offline'
 };
 
@@ -27,7 +28,7 @@ let botStatus = {
 let isReconnecting = false;
 let movementTimer = null;
 const MAX_RECONNECT_ATTEMPTS = 5;
-const RECONNECT_DELAY = 30000;
+const RECONNECT_DELAY = 30000; // 30s
 
 function addLog(message) {
   const timestamp = new Date().toLocaleTimeString();
@@ -65,7 +66,8 @@ function createBot() {
     scheduleReconnect();
     return;
   }
-  
+
+  // Wait a few seconds to let the server fully start
   bot.once('spawn', () => {
     addLog('Bot spawned in the world!');
     botStatus.connected = true;
@@ -139,9 +141,7 @@ function startRandomMovement() {
   const actions = ['forward', 'back', 'left', 'right', 'jump', 'look', 'sneak', 'idle'];
   
   function performRandomAction() {
-    if (!bot || !bot.entity) {
-      return;
-    }
+    if (!bot || !bot.entity) return;
     
     const action = actions[Math.floor(Math.random() * actions.length)];
     const duration = Math.floor(Math.random() * 2000) + 500;
@@ -153,62 +153,40 @@ function startRandomMovement() {
         case 'forward':
           botStatus.lastAction = 'Walking forward';
           bot.setControlState('forward', true);
-          setTimeout(() => {
-            if (bot && bot.entity) bot.setControlState('forward', false);
-          }, duration);
+          setTimeout(() => { if (bot && bot.entity) bot.setControlState('forward', false); }, duration);
           break;
-          
         case 'back':
           botStatus.lastAction = 'Walking backward';
           bot.setControlState('back', true);
-          setTimeout(() => {
-            if (bot && bot.entity) bot.setControlState('back', false);
-          }, duration);
+          setTimeout(() => { if (bot && bot.entity) bot.setControlState('back', false); }, duration);
           break;
-          
         case 'left':
           botStatus.lastAction = 'Walking left';
           bot.setControlState('left', true);
-          setTimeout(() => {
-            if (bot && bot.entity) bot.setControlState('left', false);
-          }, duration);
+          setTimeout(() => { if (bot && bot.entity) bot.setControlState('left', false); }, duration);
           break;
-          
         case 'right':
           botStatus.lastAction = 'Walking right';
           bot.setControlState('right', true);
-          setTimeout(() => {
-            if (bot && bot.entity) bot.setControlState('right', false);
-          }, duration);
+          setTimeout(() => { if (bot && bot.entity) bot.setControlState('right', false); }, duration);
           break;
-          
         case 'jump':
           botStatus.lastAction = 'Jumping';
           bot.setControlState('jump', true);
-          setTimeout(() => {
-            if (bot && bot.entity) bot.setControlState('jump', false);
-          }, 300);
+          setTimeout(() => { if (bot && bot.entity) bot.setControlState('jump', false); }, 300);
           break;
-          
         case 'look':
           const yaw = (Math.random() * Math.PI * 2) - Math.PI;
           const pitch = (Math.random() * Math.PI) - (Math.PI / 2);
           botStatus.lastAction = 'Looking around';
           bot.look(yaw, pitch, false);
           break;
-          
         case 'sneak':
           botStatus.lastAction = 'Sneaking';
           bot.setControlState('sneak', true);
           bot.setControlState('forward', true);
-          setTimeout(() => {
-            if (bot && bot.entity) {
-              bot.setControlState('sneak', false);
-              bot.setControlState('forward', false);
-            }
-          }, duration);
+          setTimeout(() => { if (bot && bot.entity) { bot.setControlState('sneak', false); bot.setControlState('forward', false); } }, duration);
           break;
-          
         case 'idle':
           botStatus.lastAction = 'Idle';
           break;
