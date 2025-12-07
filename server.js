@@ -1,5 +1,4 @@
 const express = require('express');
-const path = require('path');
 const mineflayer = require('mineflayer');
 
 const app = express();
@@ -10,7 +9,8 @@ const BOT_CONFIG = {
   host: 'Nainiwalranvir.aternos.me',
   port: 45216,
   username: process.env.MC_USERNAME || 'RandomBot_' + Math.floor(Math.random() * 10000),
-  version: '1.21.10', // <-- Updated from false
+  version: false,           // Let Mineflayer auto-detect
+  protocolVersion: 763,     // Protocol for Minecraft 1.21.10
   auth: 'offline'
 };
 
@@ -33,9 +33,7 @@ const RECONNECT_DELAY = 30000; // 30s
 function addLog(message) {
   const timestamp = new Date().toLocaleTimeString();
   botStatus.logs.unshift({ time: timestamp, message });
-  if (botStatus.logs.length > 50) {
-    botStatus.logs.pop();
-  }
+  if (botStatus.logs.length > 50) botStatus.logs.pop();
   console.log(`[${timestamp}] ${message}`);
 }
 
@@ -67,7 +65,6 @@ function createBot() {
     return;
   }
 
-  // Wait a few seconds to let the server fully start
   bot.once('spawn', () => {
     addLog('Bot spawned in the world!');
     botStatus.connected = true;
@@ -78,17 +75,11 @@ function createBot() {
   });
   
   bot.on('chat', (username, message) => {
-    if (bot && username !== bot.username) {
-      addLog(`Chat: <${username}> ${message}`);
-    }
+    if (bot && username !== bot.username) addLog(`Chat: <${username}> ${message}`);
   });
   
   bot.on('kicked', (reason) => {
-    let reasonText = reason;
-    if (typeof reason === 'object') {
-      reasonText = JSON.stringify(reason);
-    }
-    addLog(`Bot was kicked: ${reasonText}`);
+    addLog(`Bot was kicked: ${typeof reason === 'object' ? JSON.stringify(reason) : reason}`);
     botStatus.connected = false;
     botStatus.lastAction = 'Kicked from server';
     scheduleReconnect();
@@ -150,53 +141,20 @@ function startRandomMovement() {
       bot.clearControlStates();
       
       switch (action) {
-        case 'forward':
-          botStatus.lastAction = 'Walking forward';
-          bot.setControlState('forward', true);
-          setTimeout(() => { if (bot && bot.entity) bot.setControlState('forward', false); }, duration);
-          break;
-        case 'back':
-          botStatus.lastAction = 'Walking backward';
-          bot.setControlState('back', true);
-          setTimeout(() => { if (bot && bot.entity) bot.setControlState('back', false); }, duration);
-          break;
-        case 'left':
-          botStatus.lastAction = 'Walking left';
-          bot.setControlState('left', true);
-          setTimeout(() => { if (bot && bot.entity) bot.setControlState('left', false); }, duration);
-          break;
-        case 'right':
-          botStatus.lastAction = 'Walking right';
-          bot.setControlState('right', true);
-          setTimeout(() => { if (bot && bot.entity) bot.setControlState('right', false); }, duration);
-          break;
-        case 'jump':
-          botStatus.lastAction = 'Jumping';
-          bot.setControlState('jump', true);
-          setTimeout(() => { if (bot && bot.entity) bot.setControlState('jump', false); }, 300);
-          break;
-        case 'look':
-          const yaw = (Math.random() * Math.PI * 2) - Math.PI;
-          const pitch = (Math.random() * Math.PI) - (Math.PI / 2);
-          botStatus.lastAction = 'Looking around';
-          bot.look(yaw, pitch, false);
-          break;
-        case 'sneak':
-          botStatus.lastAction = 'Sneaking';
-          bot.setControlState('sneak', true);
-          bot.setControlState('forward', true);
-          setTimeout(() => { if (bot && bot.entity) { bot.setControlState('sneak', false); bot.setControlState('forward', false); } }, duration);
-          break;
-        case 'idle':
-          botStatus.lastAction = 'Idle';
-          break;
+        case 'forward': botStatus.lastAction = 'Walking forward'; bot.setControlState('forward', true); setTimeout(() => bot.setControlState('forward', false), duration); break;
+        case 'back': botStatus.lastAction = 'Walking backward'; bot.setControlState('back', true); setTimeout(() => bot.setControlState('back', false), duration); break;
+        case 'left': botStatus.lastAction = 'Walking left'; bot.setControlState('left', true); setTimeout(() => bot.setControlState('left', false), duration); break;
+        case 'right': botStatus.lastAction = 'Walking right'; bot.setControlState('right', true); setTimeout(() => bot.setControlState('right', false), duration); break;
+        case 'jump': botStatus.lastAction = 'Jumping'; bot.setControlState('jump', true); setTimeout(() => bot.setControlState('jump', false), 300); break;
+        case 'look': botStatus.lastAction = 'Looking around'; bot.look(Math.random() * Math.PI * 2 - Math.PI, Math.random() * Math.PI - Math.PI / 2, false); break;
+        case 'sneak': botStatus.lastAction = 'Sneaking'; bot.setControlState('sneak', true); bot.setControlState('forward', true); setTimeout(() => { bot.setControlState('sneak', false); bot.setControlState('forward', false); }, duration); break;
+        case 'idle': botStatus.lastAction = 'Idle'; break;
       }
     } catch (err) {
       addLog(`Movement error: ${err.message}`);
     }
     
-    const nextActionDelay = Math.floor(Math.random() * 5000) + 3000;
-    movementTimer = setTimeout(performRandomAction, nextActionDelay);
+    movementTimer = setTimeout(performRandomAction, Math.floor(Math.random() * 5000) + 3000);
   }
   
   addLog('Starting random movement pattern...');
@@ -205,10 +163,7 @@ function startRandomMovement() {
 
 app.use(express.static('public'));
 
-app.get('/api/status', (req, res) => {
-  res.json(botStatus);
-});
-
+app.get('/api/status', (req, res) => res.json(botStatus));
 app.get('/api/restart', (req, res) => {
   addLog('Manual restart requested');
   botStatus.reconnectAttempts = 0;
