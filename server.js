@@ -9,7 +9,7 @@ const BOT_CONFIG = {
   host: 'Nainiwalranvir.aternos.me',
   port: 45216,
   username: process.env.MC_USERNAME || 'RandomBot_' + Math.floor(Math.random() * 10000),
-  version: false,           // Let Mineflayer auto-detect
+  version: 1.21.10,           // Let Mineflayer auto-detect
   protocolVersion: 763,     // Protocol for Minecraft 1.21.10
   auth: 'offline'
 };
