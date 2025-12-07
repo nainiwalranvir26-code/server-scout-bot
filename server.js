@@ -7,7 +7,7 @@ const PORT = 5000;
 
 const BOT_CONFIG = {
   host: 'Nainiwalranvir.aternos.me',
-  port: 17633,
+  port: 45216,
   username: process.env.MC_USERNAME || 'RandomBot_' + Math.floor(Math.random() * 10000),
   version: false,
   auth: 'offline'
