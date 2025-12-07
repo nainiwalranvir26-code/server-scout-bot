@@ -7,8 +7,8 @@ const PORT = 5000;
 
 // ----- UPDATED BOT CONFIG -----
 const BOT_CONFIG = {
-  host: 'Nainiwalranvir.exaroton.me',
-  port: 13199,
+  host: 'Nainiwalranvir.aternos.me',
+  port: 45216,
   username: process.env.MC_USERNAME || 'RandomBot_' + Math.floor(Math.random() * 10000),
   version: '1.21.10', // <-- Updated from false
   auth: 'offline'
